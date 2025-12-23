@@ -1,0 +1,22 @@
+services:
+  db:
+    image: mysql:8.4
+    environment:
+      MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
+      MYSQL_DATABASE: landman_mvp
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysqldata:/var/lib/mysql
+
+  api:
+    build: .
+    environment:
+      DATABASE_URL: "mysql+mysqlconnector://root@db:3306/landman_mvp"
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+
+volumes:
+  mysqldata:

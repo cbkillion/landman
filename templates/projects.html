@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Projects</h2>
+
+<div class="card">
+  <h3>Create project</h3>
+  <form method="post" action="/ui/projects">
+    <div class="row">
+      <div>
+        <label>Project name</label>
+        <input name="name" class="grid-input long" required />
+      </div>
+      <div>
+        <label>Client name</label>
+        <input name="client_name" class="grid-input long" />
+      </div>
+      <div>
+        <label>Jurisdiction</label>
+        <input name="jurisdiction" class="grid-input long" placeholder="e.g., Reeves County, TX" />
+      </div>
+    </div>
+    <div style="margin-top:12px;">
+      <button class="btn" type="submit">Create</button>
+    </div>
+  </form>
+</div>
+
+<div class="card">
+  <h3>Existing projects</h3>
+  {% if projects|length == 0 %}
+    <div class="muted">No projects yet.</div>
+  {% else %}
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Client</th>
+          <th>Jurisdiction</th>
+          <th>Status</th>
+          <th>Updated</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for p in projects %}
+        <tr>
+          <td><a href="/ui/projects/{{ p.id }}">{{ p.name }}</a></td>
+          <td>{{ p.client_name or "" }}</td>
+          <td>{{ p.jurisdiction or "" }}</td>
+          <td>{{ p.status }}</td>
+          <td class="muted">{{ p.updated_at }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% endif %}
+</div>
+{% endblock %}

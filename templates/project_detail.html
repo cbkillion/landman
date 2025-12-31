@@ -1,0 +1,136 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Project: {{ project.name }}</h2>
+<div class="muted">{{ project.client_name or "" }}{% if project.jurisdiction %} — {{ project.jurisdiction }}{% endif %}</div>
+
+{% if request.query_params.get('imported') %}
+  <div class="card">
+    Imported {{ request.query_params.get('imported') }} row(s).
+    Skipped {{ request.query_params.get('skipped') or '0' }}.
+  </div>
+{% endif %}
+
+<div class="card">
+  <h3>Bulk paste (from Excel)</h3>
+  <div class="muted">
+    Paste tab-separated rows copied from Excel. Expected columns (in order):
+    Instrument, Vol./Pg., Grantor, Grantee, Exec Date, Filed Date, Legal Description, Notes.
+  </div>
+
+  <form method="post" action="/ui/projects/{{ project.id }}/rows/paste" style="margin-top:12px;">
+    <label>Paste rows</label>
+    <textarea name="tsv" placeholder="Instrument[TAB]Vol/Pg[TAB]Grantor[TAB]Grantee[TAB]Exec Date[TAB]Filed Date[TAB]Legal Description[TAB]Notes"></textarea>
+
+    <div style="margin-top:12px;">
+      <button class="btn" type="submit">Import pasted rows</button>
+    </div>
+
+    <div class="muted" style="margin-top:8px;">
+      Dates accepted: YYYY-MM-DD or MM/DD/YYYY. Vol./Pg. can be “123/45” or “123 45”.
+    </div>
+  </form>
+</div>
+
+<div class="card">
+  <h3>Add a run sheet row</h3>
+  <form method="post" action="/ui/projects/{{ project.id }}/rows">
+    <div class="row">
+      <div>
+        <label>Row order</label>
+        <input name="row_order" type="number" class="grid-input short" value="{{ next_row_order }}" required />
+      </div>
+      <div>
+        <label>Instrument</label>
+        <input name="instrument" class="grid-input long" required />
+      </div>
+      <div>
+        <label>Volume</label>
+        <input name="volume" class="grid-input short" />
+      </div>
+      <div>
+        <label>Page</label>
+        <input name="page" class="grid-input short" />
+      </div>
+      <div>
+        <label>Grantor</label>
+        <input name="grantor" class="grid-input long" required />
+      </div>
+      <div>
+        <label>Grantee</label>
+        <input name="grantee" class="grid-input long" required />
+      </div>
+      <div>
+        <label>Exec date</label>
+        <input name="exec_date" type="date" class="grid-input" />
+      </div>
+      <div>
+        <label>Filed date</label>
+        <input name="filed_date" type="date" class="grid-input" />
+      </div>
+    </div>
+    <div style="margin-top:12px;">
+      <label>Legal description</label>
+      <textarea name="legal_description"></textarea>
+    </div>
+    <div style="margin-top:12px;">
+      <label>Notes</label>
+      <textarea name="notes"></textarea>
+    </div>
+    <div style="margin-top:12px;">
+      <button class="btn" type="submit">Add row</button>
+      <a class="btn secondary" href="/ui/projects">Back</a>
+    </div>
+  </form>
+</div>
+
+<div class="card">
+  <h3>Run sheet</h3>
+  {% if rows|length == 0 %}
+    <div class="muted">No rows yet.</div>
+  {% else %}
+    <table>
+      <thead>
+        <tr>
+          <th>Order</th>
+          <th>Instrument</th>
+          <th>Vol</th>
+          <th>Pg</th>
+          <th>Grantor</th>
+          <th>Grantee</th>
+          <th>Exec</th>
+          <th>Filed</th>
+          <th>Legal</th>
+          <th>Notes</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for r in rows %}
+        <tr>
+          <form method="post" action="/ui/rows/{{ r.id }}/update">
+            <td><input name="row_order" type="number" class="grid-input short" value="{{ r.row_order }}" required /></td>
+            <td><input name="instrument" class="grid-input long" value="{{ r.instrument }}" required /></td>
+            <td><input name="volume" class="grid-input short" value="{{ r.volume or '' }}" /></td>
+            <td><input name="page" class="grid-input short" value="{{ r.page or '' }}" /></td>
+            <td><input name="grantor" class="grid-input long" value="{{ r.grantor }}" required /></td>
+            <td><input name="grantee" class="grid-input long" value="{{ r.grantee }}" required /></td>
+            <td><input name="exec_date" type="date" class="grid-input" value="{{ r.exec_date or '' }}" /></td>
+            <td><input name="filed_date" type="date" class="grid-input" value="{{ r.filed_date or '' }}" /></td>
+            <td><input name="legal_description" class="grid-input long" value="{{ (r.legal_description or '')|replace('\n',' ') }}" /></td>
+            <td><input name="notes" class="grid-input long" value="{{ (r.notes or '')|replace('\n',' ') }}" /></td>
+            <td>
+              <input type="hidden" name="project_id" value="{{ project.id }}" />
+              <button class="btn" type="submit">Save</button>
+              <button class="btn danger" type="submit" formaction="/ui/rows/{{ r.id }}/delete" formmethod="post">Delete</button>
+            </td>
+          </form>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    <div class="muted" style="margin-top:8px;">
+      Tip: use row orders like 10, 20, 30… so you can insert between later.
+    </div>
+  {% endif %}
+</div>
+{% endblock %}

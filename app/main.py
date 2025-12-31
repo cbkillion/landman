@@ -1,11 +1,12 @@
 from fastapi import FastAPI, Depends, HTTPException
 from sqlalchemy.orm import Session
 from sqlalchemy import and_
-
+from app.ui import router as ui_router
 from app.deps import get_db
 from app import models, schemas
 
 app = FastAPI(title="Landman MVP API")
+app.include_router(ui_router)
 
 # MVP: hard-coded actor for attribution.
 # Replace with real auth later.
